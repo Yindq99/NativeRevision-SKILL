@@ -1,8 +1,8 @@
-# Native Revision Skill
+# NativeRevision-Skill
 
-> Make agent edits read like native documentation instead of prompt-shaped patches.
+> **Make agent edits read like native documentation, not prompt-shaped patches.**
 
-Native Revision is an AI agent skill for revising existing prompts, specs, configs, README files, schemas, and agent instructions without leaving instruction residue. It helps Codex, Claude Code, OpenClaw, and other `SKILL.md`-compatible agents preserve contracts while applying local changes.
+An AI skill for Codex, Claude Code, OpenClaw, and other `SKILL.md`-compatible agents. Native Revision helps agents update prompts, specs, configs, schemas, README files, and agent instructions while preserving contracts and removing instruction residue.
 
 ## Introduction
 
@@ -14,7 +14,7 @@ Agentic editing often succeeds at the headline request while leaving visible mod
 - Output fields renamed without a downstream migration.
 - Existing workflows compressed into vague summaries.
 
-For example:
+For example: (See [examples](references/examples.md) for more details)
 - "You are not X, but Y."
 - "This is now handled by Z."
 - "Do not define A; call B instead."
@@ -23,72 +23,89 @@ These edits expose the user's instruction and can damage prompts, schemas, and d
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [What It Covers](#what-it-covers)
-- [Quick Start](#quick-start)
-- [Local Lint](#local-lint)
-- [Repository Layout](#repository-layout)
-- [Contribution](#contribution)
+- [Native Revision Skill](#native-revision-skill)
+  - [Installation](#installation)
+  - [What It Covers](#what-it-covers)
+  - [Deep Coverage Includes](#deep-coverage-includes)
+  - [Quick Start](#quick-start)
+  - [Local Lint](#local-lint)
+  - [Repository Layout](#repository-layout)
+  - [Contribution](#contribution)
 
 ## Installation
 
-Clone or copy this repository, then place the `native-revision` folder where your agent loads skills.
+Clone or copy this repository, then place the skill folder where your agent loads skills. The installed folder should contain `SKILL.md`, `README.md`, `references/`, and `scripts/`.
 
-### Claude Code
+- <details><summary>Claude Code</summary>
 
-Personal skill:
+  Personal skill:
 
-```bash
-mkdir -p ~/.claude/skills
-cp -R native_revision ~/.claude/skills/native-revision
-```
+  ```bash
+  mkdir -p ~/.claude/skills
+  cp -R /path/to/NativeRevision-SKILL ~/.claude/skills/native-revision
+  ```
 
-Project skill:
+  Project skill:
 
-```bash
-mkdir -p .claude/skills
-cp -R native_revision .claude/skills/native-revision
-```
+  ```bash
+  mkdir -p .claude/skills
+  cp -R /path/to/NativeRevision-SKILL .claude/skills/native-revision
+  ```
 
-Claude Code skills are folders containing `SKILL.md`; the directory name becomes the slash command.
+  Claude Code skills are folders containing `SKILL.md`; the directory name becomes the slash command.
 
-### Codex
+</details>
 
-Personal skill:
+- <details><summary>Codex</summary>
 
-```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R native_revision "${CODEX_HOME:-$HOME/.codex}/skills/native-revision"
-```
+  Personal skill:
 
-Project-local skill packs may also place the folder under a project skills directory if your Codex setup loads one.
+  ```bash
+  mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+  cp -R /path/to/NativeRevision-SKILL "${CODEX_HOME:-$HOME/.codex}/skills/native-revision"
+  ```
 
-### OpenClaw
+  Project skill:
 
-Shared skill:
+  ```bash
+  mkdir -p .agents/skills
+  cp -R /path/to/NativeRevision-SKILL .agents/skills/native-revision
+  ```
 
-```bash
-mkdir -p ~/.openclaw/skills
-cp -R native_revision ~/.openclaw/skills/native-revision
-```
+</details>
 
-Workspace skill:
+- <details><summary>OpenClaw</summary>
 
-```bash
-mkdir -p skills
-cp -R native_revision skills/native-revision
-openclaw skills list
-```
+  Shared skill:
 
-OpenClaw also supports `<workspace>/.agents/skills`, `~/.agents/skills`, and configured extra skill folders.
+  ```bash
+  mkdir -p ~/.openclaw/skills
+  cp -R /path/to/NativeRevision-SKILL ~/.openclaw/skills/native-revision
+  ```
 
-### Other Agents
+  Workspace skill:
 
-Any AgentSkills-compatible tool can use this package if it supports a directory containing `SKILL.md` with YAML frontmatter. If the agent has no skill loader, paste `SKILL.md` into the agent's project instructions and keep `references/` nearby for manual lookup.
+  ```bash
+  mkdir -p skills
+  cp -R /path/to/NativeRevision-SKILL skills/native-revision
+  openclaw skills list
+  ```
+
+  OpenClaw also supports `<workspace>/.agents/skills`, `~/.agents/skills`, and configured extra skill folders.
+
+</details>
+
+- <details><summary>Other Agents</summary>
+
+  Any AgentSkills-compatible tool can use this package if it supports a directory containing `SKILL.md` with YAML frontmatter.
+
+  If your agent has no skill loader, paste `SKILL.md` into the agent's project instructions and keep `references/` nearby for manual lookup.
+
+</details>
 
 ## What It Covers
 
-| Area | Protection |
+| Area | Coverage |
 | --- | --- |
 | Instruction residue | Avoids visible paraphrases of user edit prompts |
 | Patch-like language | Replaces negative contrast and migration-note wording with stable current-state language |
@@ -99,32 +116,34 @@ Any AgentSkills-compatible tool can use this package if it supports a directory 
 
 ## Quick Start
 
-Ask your agent:
+Ask your agent to use the skill when revising an existing artifact:
 
 ```markdown
-Use $native-revision to update this API gateway spec so Auth Service owns token validation. Preserve the gateway's routing responsibilities and the existing JSON response contract, and avoid instruction-residual wording.
+Use $native-revision to update this API gateway spec so Auth Service owns token validation.
+Preserve the gateway's routing responsibilities and the existing JSON response contract.
+Avoid instruction-residual wording.
 ```
 
-The agent should:
+The agent should now:
 
-- Extract the edit intent first.
-- Identify protected contracts.
-- Patch only relevant sections.
-- Avoid migration-note language.
-- Verify the result before finalizing.
+- Extract the edit intent before changing text.
+- Identify protected contracts and editable regions.
+- Patch only the relevant sections.
+- Write in stable current-state language.
+- Verify contract preservation before finalizing.
 
 ## Local Lint
 
 Run the helper script to flag likely residue and contract drift:
 
 ```bash
-python3 native_revision/scripts/native_revision_lint.py original.md revised.md --instruction instruction.txt
+python3 scripts/native_revision_lint.py original.md revised.md --instruction instruction.txt
 ```
 
 Machine-readable output:
 
 ```bash
-python3 native_revision/scripts/native_revision_lint.py original.md revised.md --instruction instruction.txt --json
+python3 scripts/native_revision_lint.py original.md revised.md --instruction instruction.txt --json
 ```
 
 The script checks common residue markers, high overlap with the edit instruction, removed Markdown headings, removed JSON keys, and removed tool names. Treat findings as review prompts, not automatic failures.
@@ -134,7 +153,7 @@ By default, fenced code blocks are ignored so teaching examples do not count as 
 ## Repository Layout
 
 ```text
-native_revision/
+NativeRevision-SKILL/
 ├── SKILL.md
 ├── README.md
 ├── references/
