@@ -1,3 +1,5 @@
+
+
 # NativeRevision-Skill
 
 > **Make agent edits read like native documentation, not prompt-shaped patches.**
@@ -26,7 +28,6 @@ These edits expose the user's instruction and can damage prompts, schemas, and d
 - [Native Revision Skill](#native-revision-skill)
   - [Installation](#installation)
   - [What It Covers](#what-it-covers)
-  - [Deep Coverage Includes](#deep-coverage-includes)
   - [Quick Start](#quick-start)
   - [Local Lint](#local-lint)
   - [Repository Layout](#repository-layout)
